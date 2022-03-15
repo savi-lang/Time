@@ -1,0 +1,16 @@
+:ffi _FFI
+  :: C function used to get the current time on MacOS.
+  :fun gettimeofday(
+    time_pair_out CPointer(Pair(U64, U64))
+    time_zone_out CPointer(Pair(I32, I32))
+  ) I32
+
+  :: C function used to get the current time on non-MacOS POSIX platforms.
+  :fun clock_gettime(
+    clock_id U32
+    time_pair_out CPointer(Pair(USize, USize))
+  ) I32
+
+:: Clock IDs to use when calling `_FFI.clock_gettime`.
+:module _FFI.ClockType
+  :fun real_time U32: 0

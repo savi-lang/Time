@@ -13,6 +13,13 @@
     assert: time.nanosecond    == 777
     assert: time.total_seconds == 64242621370
 
+  :it "can get the current wall clock time (in UTC)"
+    time = Time.now
+    assert: time.year > 2020
+    assert: time.year < 2050 // TODO: adjust this test in the year 2050
+    assert: (time.nanosecond > 0 || Time.now.nanosecond > 0)
+    assert: time.nanosecond < 1000000000
+
   :it "correctly describes the month and day on the first day of a month"
     time = Time.utc(2036, 11, 1)
     assert: time.year  == 2036
