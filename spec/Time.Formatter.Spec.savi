@@ -59,6 +59,7 @@
     assert: t.format("%3N") == "006"
     assert: t.format("%6N") == "006000"
     assert: t.format("%9N") == "006000000"
+    assert: t.format("%3Nabc") == "006abc"
 
     // assert: t.format("%z") == "+0000"
     // assert: t.format("%:z") == "+00:00"
