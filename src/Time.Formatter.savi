@@ -139,7 +139,6 @@
               | digit_char == '6' | out << @microseconds(time)
               | digit_char == '9' | out << @nanoseconds(time)
               )
-              i += 1
             |
               ok = False
               out.push_byte('%')
