@@ -1,4 +1,4 @@
-:ffi _FFI
+:ffimodule _FFI
   :: C function used to get the current time on MacOS.
   :fun gettimeofday(
     time_pair_out CPointer(Pair(U64, U64))
