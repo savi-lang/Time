@@ -28,7 +28,7 @@
     | NoDay
     )
 
-:class val Time
+:struct val Time
   :is Comparable(Time)
 
   :const _seconds_per_day U64: 86400
@@ -44,9 +44,9 @@
     @seconds(@_unix_epoch)
 
   :: The total number of seconds since `0001-01-01 00:00:00.0` UTC
-  :var total_seconds U64
+  :let total_seconds U64
   :: The number of nanoseconds of the second
-  :var nanosecond U32: 0
+  :let nanosecond U32
 
   :: An internal-only direct constructor.
   :new val _new(@total_seconds, @nanosecond)
@@ -78,16 +78,16 @@
     @nanosecond = n
 
   :: Represent a duration of the given number of seconds.
-  :new seconds(n): @total_seconds = n
+  :new seconds(n): @nanosecond = 0, @total_seconds = n
 
   :: Represent a duration of the given number of minutes.
-  :new minutes(n): @total_seconds = @_seconds_per_minute * n
+  :new minutes(n): @nanosecond = 0, @total_seconds = @_seconds_per_minute * n
 
   :: Represent a duration of the given number of hours.
-  :new hours(n): @total_seconds = @_seconds_per_hour * n
+  :new hours(n): @nanosecond = 0, @total_seconds = @_seconds_per_hour * n
 
   :: Represent a duration of the given number of days.
-  :new days(n): @total_seconds = @_seconds_per_day * n
+  :new days(n): @nanosecond = 0, @total_seconds = @_seconds_per_day * n
 
   :: Return True if the given time is exactly equivalent to this one.
   :fun "=="(other Time'box)

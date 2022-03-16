@@ -1,4 +1,4 @@
-:class Time.Formatter
+:struct Time.Formatter
   :const month_names Array(String)'val: [
     "January"
     "February"
