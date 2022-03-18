@@ -3,4 +3,5 @@
     Spec.Process.run(env, [
       Spec.Run(Time.Spec).new(env)
       Spec.Run(Time.Formatter.Spec).new(env)
+      Spec.Run(Time.Measure.Spec).new(env)
     ])

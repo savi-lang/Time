@@ -11,6 +11,13 @@
     time_pair_out CPointer(Pair(USize, USize))
   ) I32
 
+  :: C function used to get the system uptime ticks on MacOS.
+  :fun mach_absolute_time U64
+
+  :: C function used to get the numerator and denominator for ticks on MacOS.
+  :fun mach_timebase_info(info CPointer(Pair(U32, U32))) I32
+
 :: Clock IDs to use when calling `_FFI.clock_gettime`.
 :module _FFI.ClockType
   :fun real_time U32: 0
+  :fun monotonic U32: if Platform.is_linux (1 | 4)
