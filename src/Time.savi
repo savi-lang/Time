@@ -362,6 +362,10 @@
     Time.Formatter.new(pattern).format(@)
 
   :: Get the current wall-clock adjusted system time (in UTC).
+  ::
+  :: Because this time is not monotonic and gets adjusted to match wall clocks,
+  :: it is not suitable for measuring intervals of time during the program.
+  :: To measure time intervals, use functions of `Time.Measure` instead.
   :new now
     case (
     | Platform.is_windows |

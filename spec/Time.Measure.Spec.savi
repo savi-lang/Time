@@ -1,0 +1,53 @@
+:class Time.Measure.Spec
+  :is Spec
+  :const describes: "Time.Measure"
+
+  :it "measures nanoseconds spent in the given block"
+    run_count = 0
+    prior = Time.Measure.current_nanoseconds
+    measured = Time.Measure.nanoseconds -> (
+      run_count += 1
+      _FFI.TestHacks.sleep(1)
+    )
+    after = Time.Measure.current_nanoseconds
+
+    assert: run_count == 1
+    assert: measured >= 1000000000  // at least 1 second (due to the sleep)
+    assert: measured <= 10000000000 // it should never take more than 10 seconds
+    assert: measured <= (after - prior)
+
+  :it "measures microseconds spent in the given block"
+    run_count = 0
+    prior = Time.Measure.current_microseconds
+    measured = Time.Measure.microseconds -> (
+      run_count += 1
+      _FFI.TestHacks.sleep(1)
+    )
+    after = Time.Measure.current_microseconds
+
+    assert: run_count == 1
+    assert: measured >= 1000000  // at least 1 second (due to the sleep)
+    assert: measured <= 10000000 // it should never take more than 10 seconds
+    assert: measured <= (after - prior)
+
+  :it "measures milliseconds spent in the given block"
+    run_count = 0
+    prior = Time.Measure.current_milliseconds
+    measured = Time.Measure.milliseconds -> (
+      run_count += 1
+      _FFI.TestHacks.sleep(1)
+    )
+    after = Time.Measure.current_milliseconds
+
+    assert: run_count == 1
+    assert: measured > 0
+    assert: measured >= 1000  // at least 1 second (due to the sleep)
+    assert: measured <= 10000 // it should never take more than 10 seconds
+    assert: measured <= (after - prior)
+
+// It's never advisable to use `sleep` in Savi, given that it blocks the
+// entire scheduler thread from making progress. However, as a test hack
+// it's reasonable because it helps us test a specific non-zero amount of
+// time passing inside the block we are measuring.
+:module _FFI.TestHacks
+  :ffi sleep(seconds I32) I32
