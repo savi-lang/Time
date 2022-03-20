@@ -26,18 +26,18 @@
     assert: time.month == 11
     assert: time.day   == 1
 
-  :it "can add or subtract other time durations"
+  :it "can add or subtract time durations"
     assert:
-      (Time.utc(2036, 10, 7, 20, 36, 10, 777) - Time.days(3))
+      (Time.utc(2036, 10, 7, 20, 36, 10, 777) - Time.Duration.days(3))
       == Time.utc(2036, 10, 4, 20, 36, 10, 777)
     assert:
-      (Time.utc(2036, 10, 7, 20, 36, 10, 777) + Time.hours(7))
+      (Time.utc(2036, 10, 7, 20, 36, 10, 777) + Time.Duration.hours(7))
       == Time.utc(2036, 10, 8, 3, 36, 10, 777)
 
   :it "can be compared to other times"
     now = Time.utc(2036, 10, 7, 20, 36, 10, 777)
-    soon = now + Time.nanoseconds(13)
-    later = now + Time.hours(12)
+    soon = now + Time.Duration.nanoseconds(13)
+    later = now + Time.Duration.hours(12)
     assert: now < later
     assert: now <= later
     assert: (now == later).is_false

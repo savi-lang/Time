@@ -1,0 +1,206 @@
+:class Time.Duration.Spec
+  :is Spec
+  :const describes: "Time.Duration"
+
+  :it "can construct a duration in various units"
+    assert: Time.Duration.weeks(3) == Time.Duration.days(21)
+    assert: Time.Duration.days(3) == Time.Duration.hours(72)
+    assert: Time.Duration.hours(3) == Time.Duration.minutes(180)
+    assert: Time.Duration.minutes(3) == Time.Duration.seconds(180)
+    assert: Time.Duration.seconds(3) == Time.Duration.milliseconds(3000)
+    assert: Time.Duration.milliseconds(3) == Time.Duration.microseconds(3000)
+    assert: Time.Duration.microseconds(3) == Time.Duration.nanoseconds(3000)
+
+  :it "can export to a smaller unit without loss of precision"
+    assert: Time.Duration.weeks(3).total_weeks == 3
+    assert: Time.Duration.weeks(3).total_days == 21
+    assert: Time.Duration.days(3).total_hours == 72
+    assert: Time.Duration.hours(3).total_minutes == 180
+    assert: Time.Duration.minutes(3).total_seconds == 180
+    // Everything smaller than `total_seconds` may raise an error
+    // because it may overflow the bounds of the `U64` result.
+    assert: Time.Duration.seconds(3).total_milliseconds! == 3000
+    assert: Time.Duration.milliseconds(3).total_microseconds! == 3000
+    assert: Time.Duration.microseconds(3).total_nanoseconds! == 3000
+
+  :it "overflows the bounds of the U64 export when the duration is too long"
+    assert:       U64.max_value ==      18446744073709551615
+    assert:       Time.Duration.seconds(18446744073709551).total_milliseconds! == 18446744073709551000
+    assert error: Time.Duration.seconds(18446744073709552).total_milliseconds!
+    assert:       Time.Duration.seconds(18446744073709).total_microseconds! == 18446744073709000000
+    assert error: Time.Duration.seconds(18446744073710).total_microseconds!
+    assert:       Time.Duration.seconds(18446744073).total_nanoseconds! == 18446744073000000000
+    assert error: Time.Duration.seconds(18446744074).total_nanoseconds!
+
+  :it "can export to a larger unit losing precision (rounding down)"
+    assert: Time.Duration.days(21).total_weeks == 3
+    assert: Time.Duration.days(27).total_weeks == 3
+    assert: Time.Duration.days(28).total_weeks == 4
+    assert: Time.Duration.hours(72).total_days == 3
+    assert: Time.Duration.hours(95).total_days == 3
+    assert: Time.Duration.hours(96).total_days == 4
+    assert: Time.Duration.minutes(180).total_hours == 3
+    assert: Time.Duration.minutes(239).total_hours == 3
+    assert: Time.Duration.minutes(240).total_hours == 4
+    assert: Time.Duration.seconds(180).total_minutes == 3
+    assert: Time.Duration.seconds(239).total_minutes == 3
+    assert: Time.Duration.seconds(240).total_minutes == 4
+    assert: Time.Duration.milliseconds(3000).total_seconds == 3
+    assert: Time.Duration.milliseconds(3999).total_seconds == 3
+    assert: Time.Duration.milliseconds(4000).total_seconds == 4
+    assert: Time.Duration.microseconds(3000).total_milliseconds! == 3
+    assert: Time.Duration.microseconds(3999).total_milliseconds! == 3
+    assert: Time.Duration.microseconds(4000).total_milliseconds! == 4
+    assert: Time.Duration.nanoseconds(3000).total_microseconds! == 3
+    assert: Time.Duration.nanoseconds(3999).total_microseconds! == 3
+    assert: Time.Duration.nanoseconds(4000).total_microseconds! == 4
+
+  :it "can chain additive amounts onto an original duration"
+    t = Time.Duration
+    assert: t.weeks(3) + t.weeks(6) == t.weeks(9)
+    assert: t.weeks(3).plus_weeks(6) == t.weeks(9)
+    assert: t.weeks(3) + t.days(6) == t.days(27)
+    assert: t.weeks(3).plus_days(6) == t.days(27)
+    assert: t.days(3) + t.hours(6) == t.hours(78)
+    assert: t.days(3).plus_hours(6) == t.hours(78)
+    assert: t.hours(3) + t.minutes(6) == t.minutes(186)
+    assert: t.hours(3).plus_minutes(6) == t.minutes(186)
+    assert: t.minutes(3) + t.seconds(6) == t.seconds(186)
+    assert: t.minutes(3).plus_seconds(6) == t.seconds(186)
+    assert: t.seconds(3) + t.milliseconds(6) == t.milliseconds(3006)
+    assert: t.seconds(3).plus_milliseconds(6) == t.milliseconds(3006)
+    assert: t.milliseconds(3) + t.microseconds(6) == t.microseconds(3006)
+    assert: t.milliseconds(3).plus_microseconds(6) == t.microseconds(3006)
+    assert: t.microseconds(3) + t.nanoseconds(6) == t.nanoseconds(3006)
+    assert: t.microseconds(3).plus_nanoseconds(6) == t.nanoseconds(3006)
+
+  :it "can chain subtractive amounts onto an original duration"
+    t = Time.Duration
+    assert: t.weeks(9) - t.weeks(6) == t.weeks(3)
+    assert: t.weeks(9).minus_weeks(6) == t.weeks(3)
+    assert: t.weeks(3) - t.days(6) == t.days(15)
+    assert: t.weeks(3).minus_days(6) == t.days(15)
+    assert: t.days(3) - t.hours(6) == t.hours(66)
+    assert: t.days(3).minus_hours(6) == t.hours(66)
+    assert: t.hours(3) - t.minutes(6) == t.minutes(174)
+    assert: t.hours(3).minus_minutes(6) == t.minutes(174)
+    assert: t.minutes(3) - t.seconds(6) == t.seconds(174)
+    assert: t.minutes(3).minus_seconds(6) == t.seconds(174)
+    assert: t.seconds(3) - t.milliseconds(6) == t.milliseconds(2994)
+    assert: t.seconds(3).minus_milliseconds(6) == t.milliseconds(2994)
+    assert: t.milliseconds(3) - t.microseconds(6) == t.microseconds(2994)
+    assert: t.milliseconds(3).minus_microseconds(6) == t.microseconds(2994)
+    assert: t.microseconds(3) - t.nanoseconds(6) == t.nanoseconds(2994)
+    assert: t.microseconds(3).minus_nanoseconds(6) == t.nanoseconds(2994)
+
+  :it "has wrap-around overflow semantics by default when adding"
+    t = Time.Duration
+    max = t.max_value
+    assert: max + t.nanoseconds(3) == t.nanoseconds(2)
+    assert: max.plus_nanoseconds(3) == t.nanoseconds(2)
+    assert: max + t.microseconds(3) == t.nanoseconds(2999)
+    assert: max.plus_microseconds(3) == t.nanoseconds(2999)
+    assert: max + t.milliseconds(3) == t.nanoseconds(2999999)
+    assert: max.plus_milliseconds(3) == t.nanoseconds(2999999)
+    assert: max + t.seconds(3) == t.seconds(3) - t.nanoseconds(1)
+    assert: max.plus_seconds(3) == t.seconds(3) - t.nanoseconds(1)
+    assert: max + t.minutes(3) == t.minutes(3) - t.nanoseconds(1)
+    assert: max.plus_minutes(3) == t.minutes(3) - t.nanoseconds(1)
+    assert: max + t.hours(3) == t.hours(3) - t.nanoseconds(1)
+    assert: max.plus_hours(3) == t.hours(3) - t.nanoseconds(1)
+    assert: max + t.days(3) == t.days(3) - t.nanoseconds(1)
+    assert: max.plus_days(3) == t.days(3) - t.nanoseconds(1)
+    assert: max + t.weeks(3) == t.weeks(3) - t.nanoseconds(1)
+    assert: max.plus_weeks(3) == t.weeks(3) - t.nanoseconds(1)
+
+  :it "can raise an error on overflow when adding with exclamation point"
+    t = Time.Duration
+    max = t.max_value
+    assert: max == (max - t.nanoseconds(2)) +! t.nanoseconds(2)
+    assert: max == (max - t.nanoseconds(2)).plus_nanoseconds!(2)
+    assert error:  (max - t.nanoseconds(2)) +! t.nanoseconds(3)
+    assert error:  (max - t.nanoseconds(2)).plus_nanoseconds!(3)
+    assert: max == (max - t.microseconds(2)) +! t.microseconds(2)
+    assert: max == (max - t.microseconds(2)).plus_microseconds!(2)
+    assert error:  (max - t.microseconds(2)) +! t.microseconds(3)
+    assert error:  (max - t.microseconds(2)).plus_microseconds!(3)
+    assert: max == (max - t.milliseconds(2)) +! t.milliseconds(2)
+    assert: max == (max - t.milliseconds(2)).plus_milliseconds!(2)
+    assert error:  (max - t.milliseconds(2)) +! t.milliseconds(3)
+    assert error:  (max - t.milliseconds(2)).plus_milliseconds!(3)
+    assert: max == (max - t.seconds(2)) +! t.seconds(2)
+    assert: max == (max - t.seconds(2)).plus_seconds!(2)
+    assert error:  (max - t.seconds(2)) +! t.seconds(3)
+    assert error:  (max - t.seconds(2)).plus_seconds!(3)
+    assert: max == (max - t.minutes(2)) +! t.minutes(2)
+    assert: max == (max - t.minutes(2)).plus_minutes!(2)
+    assert error:  (max - t.minutes(2)) +! t.minutes(3)
+    assert error:  (max - t.minutes(2)).plus_minutes!(3)
+    assert: max == (max - t.hours(2)) +! t.hours(2)
+    assert: max == (max - t.hours(2)).plus_hours!(2)
+    assert error:  (max - t.hours(2)) +! t.hours(3)
+    assert error:  (max - t.hours(2)).plus_hours!(3)
+    assert: max == (max - t.days(2)) +! t.days(2)
+    assert: max == (max - t.days(2)).plus_days!(2)
+    assert error:  (max - t.days(2)) +! t.days(3)
+    assert error:  (max - t.days(2)).plus_days!(3)
+    assert: max == (max - t.weeks(2)) +! t.weeks(2)
+    assert: max == (max - t.weeks(2)).plus_weeks!(2)
+    assert error:  (max - t.weeks(2)) +! t.weeks(3)
+    assert error:  (max - t.weeks(2)).plus_weeks!(3)
+
+  :it "has wrap-around underflow semantics by default when subtracting"
+    t = Time.Duration
+    max = t.max_value
+    assert: t.nanoseconds(2) - t.nanoseconds(5) == max - t.nanoseconds(2)
+    assert: t.nanoseconds(2) - t.nanoseconds(5) == max - t.nanoseconds(2)
+    assert: t.microseconds(2) - t.microseconds(5) == max - t.nanoseconds(2999)
+    assert: t.microseconds(2) - t.microseconds(5) == max - t.nanoseconds(2999)
+    assert: t.milliseconds(2) - t.milliseconds(5) == max - t.nanoseconds(2999999)
+    assert: t.milliseconds(2) - t.milliseconds(5) == max - t.nanoseconds(2999999)
+    assert: t.seconds(2) -   t.seconds(5) == max - t.seconds(3) + t.nanoseconds(1)
+    assert: t.seconds(2).minus_seconds(5) == max - t.seconds(3) + t.nanoseconds(1)
+    assert: t.minutes(2) -   t.minutes(5) == max - t.minutes(3) + t.nanoseconds(1)
+    assert: t.minutes(2).minus_minutes(5) == max - t.minutes(3) + t.nanoseconds(1)
+    assert: t.hours(2) -   t.hours(5) == max - t.hours(3) + t.nanoseconds(1)
+    assert: t.hours(2).minus_hours(5) == max - t.hours(3) + t.nanoseconds(1)
+    assert: t.days(2) -   t.days(5) == max - t.days(3) + t.nanoseconds(1)
+    assert: t.days(2).minus_days(5) == max - t.days(3) + t.nanoseconds(1)
+    assert: t.weeks(2) -   t.weeks(5) == max - t.weeks(3) + t.nanoseconds(1)
+    assert: t.weeks(2).minus_weeks(5) == max - t.weeks(3) + t.nanoseconds(1)
+
+  :it "can raise an error on underflow when subtracting with exclamation point"
+    t = Time.Duration
+    zero = t.zero
+    assert: zero == t.nanoseconds(5) -! t.nanoseconds(5)
+    assert: zero == t.nanoseconds(5).minus_nanoseconds!(5)
+    assert error:   t.nanoseconds(5) -! t.nanoseconds(6)
+    assert error:   t.nanoseconds(5).minus_nanoseconds!(6)
+    assert: zero == t.microseconds(5) -! t.microseconds(5)
+    assert: zero == t.microseconds(5).minus_microseconds!(5)
+    assert error:   t.microseconds(5) -! t.microseconds(6)
+    assert error:   t.microseconds(5).minus_microseconds!(6)
+    assert: zero == t.milliseconds(5) -! t.milliseconds(5)
+    assert: zero == t.milliseconds(5).minus_milliseconds!(5)
+    assert error:   t.milliseconds(5) -! t.milliseconds(6)
+    assert error:   t.milliseconds(5).minus_milliseconds!(6)
+    assert: zero == t.seconds(5) -! t.seconds(5)
+    assert: zero == t.seconds(5).minus_seconds!(5)
+    assert error:   t.seconds(5) -! t.seconds(6)
+    assert error:   t.seconds(5).minus_seconds!(6)
+    assert: zero == t.minutes(5) -! t.minutes(5)
+    assert: zero == t.minutes(5).minus_minutes!(5)
+    assert error:   t.minutes(5) -! t.minutes(6)
+    assert error:   t.minutes(5).minus_minutes!(6)
+    assert: zero == t.hours(5) -! t.hours(5)
+    assert: zero == t.hours(5).minus_hours!(5)
+    assert error:   t.hours(5) -! t.hours(6)
+    assert error:   t.hours(5).minus_hours!(6)
+    assert: zero == t.days(5) -! t.days(5)
+    assert: zero == t.days(5).minus_days!(5)
+    assert error:   t.days(5) -! t.days(6)
+    assert error:   t.days(5).minus_days!(6)
+    assert: zero == t.weeks(5) -! t.weeks(5)
+    assert: zero == t.weeks(5).minus_weeks!(5)
+    assert error:   t.weeks(5) -! t.weeks(6)
+    assert error:   t.weeks(5).minus_weeks!(6)
