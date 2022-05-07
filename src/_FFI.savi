@@ -15,7 +15,29 @@
   :ffi mach_absolute_time U64
 
   :: C function used to get the numerator and denominator for ticks on MacOS.
-  :ffi mach_timebase_info(info CPointer(Pair(U32, U32))) I32
+  :ffi mach_timebase_info(out CPointer(Pair(U32, U32))) I32
+
+  :: C function used to get the performance counter value on Windows.
+  :ffi _windows_query_perf_counter(out CPointer(Pair(U32, U32))) Bool
+    :foreign_name QueryPerformanceCounter
+  :fun windows_perf_counter U64
+    :inline always
+    pair = Pair(U32, U32).new(0, 0)
+    @_windows_query_perf_counter(stack_address_of_variable pair)
+    pair.first.u64.bit_or(pair.last.u64.bit_shl(32))
+
+  :: C function used to get the performance counter frequency on Windows.
+  :ffi _windows_query_perf_freq(out CPointer(Pair(U32, U32))) Bool
+    :foreign_name QueryPerformanceFrequency
+  :fun windows_perf_freq U64
+    :inline always
+    pair = Pair(U32, U32).new(0, 0)
+    @_windows_query_perf_freq(stack_address_of_variable pair)
+    pair.first.u64.bit_or(pair.last.u64.bit_shl(32))
+
+  :: C function used to get the current system wall clock time on Windows.
+  :ffi windows_system_time(out CPointer(Pair(U32, U32))) None
+    :foreign_name GetSystemTimeAsFileTime
 
 :: Clock IDs to use when calling `_FFI.clock_gettime`.
 :module _FFI.ClockType

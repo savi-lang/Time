@@ -38,9 +38,13 @@
   :const _days_per_100_years U64: 36524
   :const _days_per_4_years U64: 1461
 
-  :const _unix_epoch U64: 62135596800
+  :const _unix_epoch U64: 62135596800 // January 1, 1970 (midnight)
   :fun non unix_epoch
     @seconds(@_unix_epoch)
+
+  :const _windows_epoch U64: 50491123200 // January 1, 1601 (midnight)
+  :fun non windows_epoch
+    @seconds(@_windows_epoch)
 
   :: The total number of seconds since `0001-01-01 00:00:00.0` UTC
   :let total_seconds U64
@@ -388,9 +392,15 @@
   :new now
     case (
     | Platform.is_windows |
-      // TODO: Windows support
-      @total_seconds = 0
-      @nanosecond = 0
+      // Windows gives us two U32s to be treated as a U64, indicating the
+      // number of 100ns since the Windows epoch (January 1, 1601).
+      windows_pair = Pair(U32, U32).new(0, 0)
+      _FFI.windows_system_time(stack_address_of_variable windows_pair)
+      raw = windows_pair.first.u64.bit_or(windows_pair.last.u64.bit_shl(32))
+      unit = (@_nanoseconds_per_second / 100).u64
+      absolute = raw + @_windows_epoch * unit
+      @total_seconds = total_seconds = absolute / unit
+      @nanosecond = (absolute - (@total_seconds * unit)).u32 * 100
     | Platform.is_macos |
       // MacOS gives us the seconds since unix epoch and microseconds as a pair.
       // We could also get the time zone here, but we don't; we pass null there.

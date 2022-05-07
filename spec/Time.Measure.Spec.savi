@@ -50,4 +50,15 @@
 // it's reasonable because it helps us test a specific non-zero amount of
 // time passing inside the block we are measuring.
 :module _FFI.TestHacks
-  :ffi sleep(seconds I32) I32
+  :fun sleep(seconds U32)
+    if Platform.is_posix (
+      @_posix_sleep_seconds(seconds.i32)
+    |
+      @_windows_sleep_milliseconds(seconds * 1000)
+    )
+
+  :ffi _posix_sleep_seconds(seconds I32) I32
+    :foreign_name sleep
+
+  :ffi _windows_sleep_milliseconds(milliseconds U32) None
+    :foreign_name Sleep

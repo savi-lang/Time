@@ -42,7 +42,8 @@
   :fun current_nanoseconds U64
     case (
     | Platform.is_windows |
-      0 // TODO: Windows support
+      // Windows gives us a "performance counter" and also us the time unit.
+      _FFI.windows_perf_counter * 1000000000 / _FFI.windows_perf_freq
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
@@ -84,7 +85,8 @@
   :fun current_microseconds U64
     case (
     | Platform.is_windows |
-      0 // TODO: Windows support
+      // Windows gives us a "performance counter" and also us the time unit.
+      _FFI.windows_perf_counter * 1000000 / _FFI.windows_perf_freq
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
@@ -126,7 +128,8 @@
   :fun current_milliseconds U64
     case (
     | Platform.is_windows |
-      0 // TODO: Windows support
+      // Windows gives us a "performance counter" and also us the time unit.
+      _FFI.windows_perf_counter * 1000 / _FFI.windows_perf_freq
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
