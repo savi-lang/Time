@@ -17,10 +17,19 @@
   :: C function used to get the numerator and denominator for ticks on MacOS.
   :ffi mach_timebase_info(out CPointer(Pair(U32, U32))) I32
 
+  :: Wrapper for C functions used to get subsecond values on Windows.
+  :fun windows_subseconds(factor U64)
+    freq = @_windows_perf_freq
+    if (freq <= factor) (
+      @_windows_perf_counter * (factor / freq)
+    |
+      (@_windows_perf_counter * factor) / freq
+    )
+
   :: C function used to get the performance counter value on Windows.
   :ffi _windows_query_perf_counter(out CPointer(Pair(U32, U32))) Bool
     :foreign_name QueryPerformanceCounter
-  :fun windows_perf_counter U64
+  :fun _windows_perf_counter U64
     :inline always
     pair = Pair(U32, U32).new(0, 0)
     @_windows_query_perf_counter(stack_address_of_variable pair)
@@ -29,7 +38,7 @@
   :: C function used to get the performance counter frequency on Windows.
   :ffi _windows_query_perf_freq(out CPointer(Pair(U32, U32))) Bool
     :foreign_name QueryPerformanceFrequency
-  :fun windows_perf_freq U64
+  :fun _windows_perf_freq U64
     :inline always
     pair = Pair(U32, U32).new(0, 0)
     @_windows_query_perf_freq(stack_address_of_variable pair)

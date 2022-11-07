@@ -41,9 +41,7 @@
   :: which handles the timing measurement for you around the given yield block.
   :fun current_nanoseconds U64
     case (
-    | Platform.is_windows |
-      // Windows gives us a "performance counter" and also us the time unit.
-      _FFI.windows_perf_counter * 1000000000 / _FFI.windows_perf_freq
+    | Platform.is_windows | _FFI.windows_subseconds(1000000000)
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
@@ -84,9 +82,7 @@
   :: which handles the timing measurement for you around the given yield block.
   :fun current_microseconds U64
     case (
-    | Platform.is_windows |
-      // Windows gives us a "performance counter" and also us the time unit.
-      _FFI.windows_perf_counter * 1000000 / _FFI.windows_perf_freq
+    | Platform.is_windows | _FFI.windows_subseconds(1000000)
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
@@ -127,9 +123,7 @@
   :: which handles the timing measurement for you around the given yield block.
   :fun current_milliseconds U64
     case (
-    | Platform.is_windows |
-      // Windows gives us a "performance counter" and also us the time unit.
-      _FFI.windows_perf_counter * 1000 / _FFI.windows_perf_freq
+    | Platform.is_windows | _FFI.windows_subseconds(1000)
     | Platform.is_macos |
       // MacOS gives us a count of total uptime "ticks" since the OS booted.
       // We don't know how long a "tick" is without asking the operating system,
