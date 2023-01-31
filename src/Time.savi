@@ -178,16 +178,15 @@
     (@total_seconds % @_seconds_per_minute).u8
 
   :: Print the time data for human inspection (the format is subject to change).
-  :fun inspect_into(output String'iso)
+  :fun inspect_into(output String'ref) None
     // TODO: Properly pad numbers with zeros for a constant string width.
-    output = Inspect.into(--output, @year),       output.push_byte('-')
-    output = Inspect.into(--output, @month),      output.push_byte('-')
-    output = Inspect.into(--output, @day),        output.push_byte(' ')
-    output = Inspect.into(--output, @hour),       output.push_byte(':')
-    output = Inspect.into(--output, @minute),     output.push_byte(':')
-    output = Inspect.into(--output, @second),     output.push_byte('\'')
-    output = Inspect.into(--output, @nanosecond)
-    --output
+    Inspect.into(output, @year),       output.push_byte('-')
+    Inspect.into(output, @month),      output.push_byte('-')
+    Inspect.into(output, @day),        output.push_byte(' ')
+    Inspect.into(output, @hour),       output.push_byte(':')
+    Inspect.into(output, @minute),     output.push_byte(':')
+    Inspect.into(output, @second),     output.push_byte('\'')
+    Inspect.into(output, @nanosecond)
 
   :: Returns a bit-packed representation of the year, month, and day,
   :: for internal reuse by other functions that need this information.
@@ -382,7 +381,7 @@
     @format("%m/%d/%y")
 
   :fun format(pattern String'box) String'val
-    Time.Formatter.new(pattern).format(@)
+    Time.Formatter.new(pattern).format(@).take_buffer
 
   :: Get the current wall-clock adjusted system time (in UTC).
   ::
