@@ -48,7 +48,7 @@
       // so we ask it for the timebase and multiple/divide to get nanoseconds.
       timebase = Pair(U32, U32).new(0, 0)
       timebase_res = _FFI.mach_timebase_info(stack_address_of_variable timebase)
-      return 0 if (timebase_res != 0)
+      return 0 if timebase_res != 0
       _FFI.mach_absolute_time
       * timebase.first.u64
       / timebase.last.u64
@@ -89,7 +89,7 @@
       // so we ask it for the timebase and multiple/divide to get microseconds.
       timebase = Pair(U32, U32).new(0, 0)
       timebase_res = _FFI.mach_timebase_info(stack_address_of_variable timebase)
-      return 0 if (timebase_res != 0)
+      return 0 if timebase_res != 0
       _FFI.mach_absolute_time
       * timebase.first.u64
       / (timebase.last.u64 * 1000)
@@ -130,7 +130,7 @@
       // so we ask it for the timebase and multiple/divide to get milliseconds.
       timebase = Pair(U32, U32).new(0, 0)
       timebase_res = _FFI.mach_timebase_info(stack_address_of_variable timebase)
-      return 0 if (timebase_res != 0)
+      return 0 if timebase_res != 0
       _FFI.mach_absolute_time
       * timebase.first.u64
       / (timebase.last.u64 * 1000000)

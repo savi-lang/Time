@@ -84,7 +84,7 @@
   :: DEPRECATED: Use `Time.Duration.nanoseconds` instead.
   :new nanoseconds(n U32):
     @total_seconds = 0
-    while (@_nanoseconds_per_second < n) (
+    while @_nanoseconds_per_second < n (
       n -= @_nanoseconds_per_second
       @total_seconds += 1
     )
@@ -197,21 +197,21 @@
     total_days -= num400 * @_days_per_400_years
 
     num100 U64 = total_days / @_days_per_100_years // TODO: shouldn't need an explicit U64 here
-    if (num100 == 4) (num100 = 3) // account for leap years
+    if num100 == 4 (num100 = 3) // account for leap years
     total_days -= num100 * @_days_per_100_years
 
     num4 = total_days / @_days_per_4_years
     total_days -= num4 * @_days_per_4_years
 
     numyears U64 = total_days / 365 // TODO: shouldn't need an explicit U64 here
-    if (numyears == 4) (numyears = 3) // account for leap years
+    if numyears == 4 (numyears = 3) // account for leap years
     total_days -= numyears * 365
 
     year = (num400 * 400 + num100 * 100 + num4 * 4 + numyears + 1).u32
 
     month U8 = 0
     days_in_month U64 = 0
-    while (total_days >= days_in_month) (
+    while total_days >= days_in_month (
       total_days -= days_in_month
       month += 1
       days_in_month = @_days_in_month(month, year).u64
@@ -249,12 +249,12 @@
   :: by the given year, month, and day in the proleptic Gregorian calendar.
   :fun non _absolute_days(year U32, month U8, day U8) U64
     // Normalize the month index, treating months beyond 12 as additional years.
-    while (month > 12) (year += 1, month -= 12)
+    while month > 12 (year += 1, month -= 12)
 
     // Calculate the number of days since day 1 of the given year.
     days_since_jan_1 = day.u64 - 1
     scan_month U8 = 1
-    while (scan_month < month) (
+    while scan_month < month (
       days_since_jan_1 += @_days_in_month(scan_month, year).u64
       scan_month += 1
     )
@@ -274,7 +274,7 @@
     total_days -= num400 * @_days_per_400_years
 
     num100 U64 = (total_days / @_days_per_100_years)
-    if (num100 == 4) (// leap
+    if num100 == 4 (// leap
       num100 = 3
     )
     total_days -= num100 * @_days_per_100_years
@@ -283,7 +283,7 @@
     total_days -= num4 * @_days_per_4_years
 
     numyears = (total_days / 365)
-    if (numyears == 4) (// leap
+    if numyears == 4 (// leap
       numyears = 3
     )
     total_days -= numyears * 365
@@ -297,7 +297,7 @@
     try (
       while True (
         days_in_month = @_days_in_month(month.u8, year.u32).u64
-        if (total_days < days_in_month) (
+        if total_days < days_in_month (
           error! // TODO use break
         )
 
@@ -329,7 +329,7 @@
       // previous year and the first Monday is actually in week 2.
       week_number = ((day_year - day_of_week.u64 + 10) / 7).u64
 
-      if (week_number == 0) (
+      if week_number == 0 (
         // Week number 0 means the date belongs to the last week of the previous year.
         year -= 1
 
@@ -339,18 +339,18 @@
         // year and January 1 is on a Saturday.
         jan1_day_of_week = Time.DayOfWeek.from_value(((day_of_week.u64 - day_year + 1) % 7).u8)
 
-        if ((jan1_day_of_week == Time.DayOfWeek.Friday) || (jan1_day_of_week == Time.DayOfWeek.Saturday && @_is_leap_year(year.u32))) (
+        if (jan1_day_of_week == Time.DayOfWeek.Friday) || (jan1_day_of_week == Time.DayOfWeek.Saturday && @_is_leap_year(year.u32)) (
           week_number = 53
         |
           week_number = 52
         )
       |
-        if (week_number == 53) (
+        if week_number == 53 (
           // Week number 53 is actually week number 1 of the following year, if
           // December 31 is on a Monday, Tuesday or Wednesday.
           dec31_day_of_week = (day_of_week.u64 + 31 - day) % 7
 
-          if (dec31_day_of_week <= Time.DayOfWeek.Wednesday.u64) (
+          if dec31_day_of_week <= Time.DayOfWeek.Wednesday.u64 (
             year += 1
             week_number = 1
           )

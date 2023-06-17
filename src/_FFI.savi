@@ -20,7 +20,7 @@
   :: Wrapper for C functions used to get subsecond values on Windows.
   :fun windows_subseconds(factor U64)
     freq = @_windows_perf_freq
-    if (freq <= factor) (
+    if freq <= factor (
       @_windows_perf_counter * (factor / freq)
     |
       (@_windows_perf_counter * factor) / freq
