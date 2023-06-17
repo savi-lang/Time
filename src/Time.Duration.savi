@@ -20,7 +20,7 @@
 
   :: Represent a duration of the given number of nanoseconds.
   :new nanoseconds(n U64):
-    if (n < 1000000000) (
+    if n < 1000000000 (
       @total_seconds = 0
       @nanosecond = n.u32
     |
@@ -30,7 +30,7 @@
 
   :: Represent a duration of the given number of microseconds.
   :new microseconds(n U64)
-    if (n < 1000000) (
+    if n < 1000000 (
       @total_seconds = 0
       @nanosecond = n.u32 * 1000
     |
@@ -40,7 +40,7 @@
 
   :: Represent a duration of the given number of milliseconds.
   :new milliseconds(n U64)
-    if (n < 1000) (
+    if n < 1000 (
       @total_seconds = 0
       @nanosecond = n.u32 * 1000000
     |
@@ -182,37 +182,37 @@
     printed_anything = False
     output << "Time.Duration("
 
-    if (weeks > 0) (
+    if weeks > 0 (
       Inspect.into(output, weeks), output << " weeks"
       printed_anything = True
     )
 
-    if (days > 0) (
-      if printed_anything (output << ", ")
+    if days > 0 (
+      if printed_anything output << ", "
       Inspect.into(output, days), output << " days"
       printed_anything = True
     )
 
-    if (hours > 0) (
-      if printed_anything (output << ", ")
+    if hours > 0 (
+      if printed_anything output << ", "
       Inspect.into(output, hours), output << " hours"
       printed_anything = True
     )
 
-    if (minutes > 0) (
-      if printed_anything (output << ", ")
+    if minutes > 0 (
+      if printed_anything output << ", "
       Inspect.into(output, minutes), output << " minutes"
       printed_anything = True
     )
 
-    if (seconds > 0) (
-      if printed_anything (output << ", ")
+    if seconds > 0 (
+      if printed_anything output << ", "
       Inspect.into(output, seconds), output << " seconds"
       printed_anything = True
     )
 
-    if (nanoseconds > 0) (
-      if printed_anything (output << ", ")
+    if nanoseconds > 0 (
+      if printed_anything output << ", "
       Inspect.into(output, nanoseconds), output << " nanoseconds"
       printed_anything = True
     )
@@ -241,7 +241,7 @@
   :fun "+"(other Time.Duration'box)
     total = @total_seconds + other.total_seconds
     nanos = @nanosecond + other.nanosecond
-    while (nanos >= Time._nanoseconds_per_second) (
+    while nanos >= Time._nanoseconds_per_second (
       nanos -= Time._nanoseconds_per_second
       total += 1
     )
@@ -254,7 +254,7 @@
   :fun "+!"(other Time.Duration'box)
     total = @total_seconds +! other.total_seconds
     nanos = @nanosecond + other.nanosecond
-    while (nanos >= Time._nanoseconds_per_second) (
+    while nanos >= Time._nanoseconds_per_second (
       nanos -= Time._nanoseconds_per_second
       total = total +! 1
     )
@@ -267,7 +267,7 @@
   :fun "-"(other Time.Duration'box)
     total = @total_seconds, other_total = other.total_seconds
     nanos = @nanosecond,    other_nanos = other.nanosecond
-    while (nanos < other_nanos) (
+    while nanos < other_nanos (
       nanos += Time._nanoseconds_per_second
       total -= 1
     )
@@ -280,7 +280,7 @@
   :fun "-!"(other Time.Duration'box)
     total = @total_seconds, other_total = other.total_seconds
     nanos = @nanosecond,    other_nanos = other.nanosecond
-    while (nanos < other_nanos) (
+    while nanos < other_nanos (
       nanos += Time._nanoseconds_per_second
       total = total -! 1
     )
